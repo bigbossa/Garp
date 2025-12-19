@@ -51,8 +51,8 @@ pnpm add pg
 - `id` (SERIAL) - Primary Key
 - `project_id` (INTEGER) - Foreign Key -> projects(id)
 - `no` (VARCHAR) - หมายเลขจุด (A1, A2, etc.)
-- `horizontal` (DECIMAL) - ค่าแกนนอน (cm)
-- `vertical` (DECIMAL) - ค่าแกนตั้ง (cm)
+- `horizontal` (DECIMAL) - ค่าแกนแข็ง (cm)
+- `vertical` (DECIMAL) - ค่าแกนอ่อน (cm)
 - `created_at` (TIMESTAMP) - วันเวลาที่สร้าง
 
 ## 5. การใช้งาน API Functions

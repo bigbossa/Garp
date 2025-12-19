@@ -30,7 +30,7 @@ export async function GET(request: NextRequest) {
 export async function POST(request: NextRequest) {
   try {
     const body = await request.json()
-    const { projectNumber, date, pileSize, scaleRatio, dataPoints } = body
+    const { projectNumber, projectName, date, pileSize, scaleRatio, dataPoints } = body
     
     // ตรวจสอบข้อมูล
     if (!projectNumber || !date || !pileSize || !scaleRatio || !dataPoints || dataPoints.length === 0) {
@@ -42,6 +42,7 @@ export async function POST(request: NextRequest) {
     
     const projectId = await saveProject(
       projectNumber,
+      projectName,
       date,
       pileSize,
       scaleRatio,

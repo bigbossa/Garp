@@ -8,13 +8,14 @@ import jsPDF from "jspdf"
 interface PileChartProps {
   dataPoints: DataPoint[]
   projectNumber: string
+  projectName?: string
   date: string
   pileSize: string
   scaleRatio: string
 }
 
 export const PileChart = forwardRef<{ exportChart: () => void }, PileChartProps>(
-  ({ dataPoints, projectNumber, date, pileSize, scaleRatio }, ref) => {
+  ({ dataPoints, projectNumber, projectName, date, pileSize, scaleRatio }, ref) => {
     const canvasRef = useRef<HTMLCanvasElement>(null)
     const exportCanvasRef = useRef<HTMLCanvasElement>(null)
     const graphImageRef = useRef<HTMLImageElement | null>(null)
@@ -39,7 +40,7 @@ export const PileChart = forwardRef<{ exportChart: () => void }, PileChartProps>
       img.src = getImagePath()
       img.onload = () => {
         graphImageRef.current = img
-        console.log(`Image dimensions: ${img.width} x ${img.height}`)
+        console.log(`Image dimensions: ${img.naturalWidth} x ${img.naturalHeight}`)
         drawPreview()
       }
 
@@ -83,7 +84,12 @@ export const PileChart = forwardRef<{ exportChart: () => void }, PileChartProps>
 
         // A4 portrait: 210mm x 297mm
         pdf.addImage(imgData, "PNG", 0, 0, 210, 297)
-        pdf.save(`แปลงที่-${projectNumber}.pdf`)
+        
+        // Generate filename with project name and number
+        const fileName = projectName 
+          ? `${projectName} แปลงที่ ${projectNumber}.pdf`
+          : `แปลงที่ - ${projectNumber}.pdf`
+        pdf.save(fileName)
       },
     }))
 
@@ -240,6 +246,14 @@ export const PileChart = forwardRef<{ exportChart: () => void }, PileChartProps>
       ctx.fillRect(0, 0, ctx.canvas.width, ctx.canvas.height)
 
       drawGraphBackground(ctx, width, height, offsetX, offsetY)
+      // Draw project name above the plot area (preview)
+      if (projectName) {
+        ctx.fillStyle = "#000"
+        ctx.font = "bold 12px Arial"
+        ctx.textAlign = "center"
+        // place slightly above the plot area
+        ctx.fillText(projectName, offsetX + width / 2, offsetY - 10)
+      }
       
       // Draw grid in the plot area
       const graphMarginLeft = 0.098
@@ -283,8 +297,18 @@ export const PileChart = forwardRef<{ exportChart: () => void }, PileChartProps>
 
     const drawExportChart = (ctx: CanvasRenderingContext2D, fullWidth: number, fullHeight: number) => {
       // Adjust for A4 portrait layout
-      const chartWidth = Math.min(fullWidth * 0.75, 550)
-      const chartHeight = chartWidth
+      // Use the image's intrinsic size as the "real" size and scale it to fit the available area
+      let chartWidth = Math.min(fullWidth * 0.75, 550)
+      let chartHeight = chartWidth
+      if (graphImageRef.current) {
+        const iw = graphImageRef.current.naturalWidth
+        const ih = graphImageRef.current.naturalHeight
+        const maxW = fullWidth * 0.75
+        const maxH = fullHeight * 0.6
+        const scale = Math.min(maxW / iw, maxH / ih, 1)
+        chartWidth = iw * scale
+        chartHeight = ih * scale
+      }
       const chartOffsetX = (fullWidth - chartWidth) / 2
       const chartOffsetY = 130
 
@@ -299,6 +323,11 @@ export const PileChart = forwardRef<{ exportChart: () => void }, PileChartProps>
       ctx.font = "11px Arial"
       const depthText = pileSize === "0.5M" ? "5 เมตร" : "3 เมตร"
       ctx.fillText(`(ความลึกอิ่มตัว ไม่เกิน ${depthText})`, fullWidth / 2, 70)
+      // Draw project name under the subtitle if provided
+      if (projectName) {
+        ctx.font = "bold 12px Arial"
+        ctx.fillText(projectName, fullWidth / 2, 88)
+      }
 
       // Draw yellow box for date (top right)
       ctx.fillStyle = "#ffff00"
@@ -360,13 +389,17 @@ export const PileChart = forwardRef<{ exportChart: () => void }, PileChartProps>
       
       drawDataPoints(ctx, chartWidth, chartHeight, chartOffsetX, chartOffsetY)
 
-      // Draw footer image at bottom
+      // Draw footer image at bottom using its intrinsic size (scaled to fit)
       if (footerImageRef.current) {
-        const footerHeight = 150
-        const footerWidth = fullWidth * 0.9
+        const fw = footerImageRef.current.naturalWidth
+        const fh = footerImageRef.current.naturalHeight
+        const maxFooterW = fullWidth * 0.9
+        const footerScale = Math.min(maxFooterW / fw, 1)
+        const footerWidth = fw * footerScale
+        const footerHeight = fh * footerScale
         const footerX = (fullWidth - footerWidth) / 2
         const footerY = chartOffsetY + chartHeight + 20
-        
+
         ctx.drawImage(footerImageRef.current, footerX, footerY, footerWidth, footerHeight)
       }
     }
@@ -378,13 +411,18 @@ export const PileChart = forwardRef<{ exportChart: () => void }, PileChartProps>
       const ctx = canvas.getContext("2d")
       if (!ctx) return
 
-      const width = 600
-      const height = 600
-      const offsetX = 60
-      const offsetY = 80
+      // Use image intrinsic size as the real size, but scale down to fit preview area
+      const iw = graphImageRef.current.naturalWidth
+      const ih = graphImageRef.current.naturalHeight
+      const maxPreview = 600 // max dimension for preview area
+      const scale = Math.min(maxPreview / iw, maxPreview / ih, 1)
+      const width = Math.round(iw * scale)
+      const height = Math.round(ih * scale)
+      const offsetX = Math.round((maxPreview - width) / 6) + 40
+      const offsetY = Math.round((maxPreview - height) / 6) + 60
 
-      canvas.width = 750
-      canvas.height = 750
+      canvas.width = width + offsetX * 2
+      canvas.height = height + offsetY * 2
 
       drawChart(ctx, width, height, offsetX, offsetY)
     }
@@ -393,7 +431,7 @@ export const PileChart = forwardRef<{ exportChart: () => void }, PileChartProps>
       if (graphImageRef.current) {
         drawPreview()
       }
-    }, [dataPoints, projectNumber, date])
+    }, [dataPoints, projectNumber, projectName, date])
 
     return (
       <Card className="w-full">

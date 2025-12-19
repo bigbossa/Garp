@@ -4,6 +4,7 @@ import type { DataPoint } from '@/app/page'
 export interface Project {
   id: number
   project_number: string
+  projects_name?: string
   date: string
   pile_size: string
   scale_ratio: string
@@ -15,6 +16,7 @@ export interface Project {
 // บันทึกโครงการใหม่พร้อมจุดข้อมูล
 export async function saveProject(
   projectNumber: string,
+  projectName: string | undefined,
   date: string,
   pileSize: string,
   scaleRatio: string,
@@ -27,10 +29,10 @@ export async function saveProject(
     
     // บันทึกโครงการ
     const projectResult = await client.query(
-      `INSERT INTO projects (project_number, date, pile_size, scale_ratio) 
-       VALUES ($1, $2, $3, $4) 
+      `INSERT INTO projects (project_number, projects_name, date, pile_size, scale_ratio) 
+       VALUES ($1, $2, $3, $4, $5) 
        RETURNING id`,
-      [projectNumber, date, pileSize, scaleRatio]
+      [projectNumber, projectName, date, pileSize, scaleRatio]
     )
     
     const projectId = projectResult.rows[0].id
@@ -100,6 +102,7 @@ export async function getProjectById(id: number): Promise<Project | null> {
 export async function updateProject(
   id: number,
   projectNumber: string,
+  projectName: string | undefined,
   date: string,
   pileSize: string,
   scaleRatio: string,
@@ -113,9 +116,9 @@ export async function updateProject(
     // อัพเดทข้อมูลโครงการ
     await client.query(
       `UPDATE projects 
-       SET project_number = $1, date = $2, pile_size = $3, scale_ratio = $4
-       WHERE id = $5`,
-      [projectNumber, date, pileSize, scaleRatio, id]
+       SET project_number = $1, projects_name = $2, date = $3, pile_size = $4, scale_ratio = $5
+       WHERE id = $6`,
+      [projectNumber, projectName, date, pileSize, scaleRatio, id]
     )
     
     // ลบจุดข้อมูลเก่า

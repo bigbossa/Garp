@@ -4,7 +4,7 @@
   "private": true,
   "scripts": {
     "build": "next build",
-    "dev": "next dev -p 3800",
+    "dev": "next dev -p 3700",
     "lint": "eslint .",
     "start": "next start -p 3700"
   },
