@@ -242,8 +242,8 @@ export default function PilePlottingSystem() {
                   onChange={(e) => handlePileSizeChange(e.target.value)}
                   className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
                 >
-                  <option value="0.3M">0.3M</option>
-                  <option value="0.5M">0.5M</option>
+                  <option value="0.3M">3M</option>
+                  <option value="0.5M">5M</option>
                 </select>
               </div>
               <div className="space-y-2">
@@ -347,7 +347,7 @@ export default function PilePlottingSystem() {
 
                 <Button onClick={handleExport} className="w-full" variant="default" disabled={dataPoints.length === 0}>
                   <Download className="w-4 h-4 mr-2" />
-                  Export รูปภาพ PDF
+                  Export Flie PDF 
                 </Button>
               </div>
             </CardContent>

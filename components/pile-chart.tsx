@@ -83,7 +83,7 @@ export const PileChart = forwardRef<{ exportChart: () => void }, PileChartProps>
 
         // A4 portrait: 210mm x 297mm
         pdf.addImage(imgData, "PNG", 0, 0, 210, 297)
-        pdf.save(`pile-chart-${projectNumber}-${Date.now()}.pdf`)
+        pdf.save(`แปลงที่-${projectNumber}.pdf`)
       },
     }))
 
@@ -297,7 +297,7 @@ export const PileChart = forwardRef<{ exportChart: () => void }, PileChartProps>
       ctx.textAlign = "center"
       ctx.fillText("D/C RATIO-PRESRESS PILE SIZE I-0.22 (กำลังกด และ เปอร์เซ็นหยุด)", fullWidth / 2, 55)
       ctx.font = "11px Arial"
-      const depthText = pileSize === "0.5M" ? "0.5 เมตร" : "0.3 เมตร"
+      const depthText = pileSize === "0.5M" ? "5 เมตร" : "3 เมตร"
       ctx.fillText(`(ความลึกอิ่มตัว ไม่เกิน ${depthText})`, fullWidth / 2, 70)
 
       // Draw yellow box for date (top right)
