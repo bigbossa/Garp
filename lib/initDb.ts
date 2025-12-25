@@ -1,17 +1,18 @@
-import pool from './db'
+import projectPool from './db'
 
 // ฟังก์ชันเช็คการเชื่อมต่อและสร้างตารางอัตโนมัติ
 export async function initializeDatabase() {
-  const client = await pool.connect()
+  const client = await projectPool.connect()
   
   try {
-    console.log('🔄 กำลังสร้างตารางฐานข้อมูล...')
+    // console.log('🔄 กำลังสร้างตารางฐานข้อมูล...')
     
     // สร้างตาราง projects
     await client.query(`
       CREATE TABLE IF NOT EXISTS projects (
         id SERIAL PRIMARY KEY,
         project_number VARCHAR(100) NOT NULL,
+        projects_name VARCHAR(255),
         date DATE NOT NULL,
         pile_size VARCHAR(10) NOT NULL,
         scale_ratio VARCHAR(10) NOT NULL,
@@ -64,10 +65,10 @@ export async function initializeDatabase() {
       FOR EACH ROW EXECUTE FUNCTION update_updated_at_column()
     `)
     
-    console.log('✅ สร้างตารางฐานข้อมูลเรียบร้อยแล้ว')
+    // console.log('✅ สร้างตารางฐานข้อมูลเรียบร้อยแล้ว')
     
   } catch (error) {
-    console.error('❌ เกิดข้อผิดพลาดในการสร้างตาราง:', error)
+    // console.error('❌ เกิดข้อผิดพลาดในการสร้างตาราง:', error)
     throw error
   } finally {
     client.release()

@@ -12,7 +12,7 @@ export async function GET() {
     const rows = await getAllProjectNames()
     return NextResponse.json(rows)
   } catch (err) {
-    console.error(err)
+    // console.error(err)
     return NextResponse.json({ error: 'เกิดข้อผิดพลาดในการดึงข้อมูล' }, { status: 500 })
   }
 }
@@ -32,7 +32,7 @@ export async function POST(request: NextRequest) {
     const id = await createProjectName(pj_name)
     return NextResponse.json({ success: true, pj_id: id })
   } catch (err) {
-    console.error(err)
+    // console.error(err)
     return NextResponse.json({ error: 'เกิดข้อผิดพลาดในการบันทึก' }, { status: 500 })
   }
 }
@@ -47,7 +47,7 @@ export async function PUT(request: NextRequest) {
     await updateProjectName(Number(pj_id), pj_name)
     return NextResponse.json({ success: true })
   } catch (err) {
-    console.error(err)
+    // console.error(err)
     return NextResponse.json({ error: 'เกิดข้อผิดพลาดในการอัพเดท' }, { status: 500 })
   }
 }
@@ -59,7 +59,7 @@ export async function DELETE(request: NextRequest) {
     await deleteProjectName(Number(id))
     return NextResponse.json({ success: true })
   } catch (err) {
-    console.error(err)
+    // console.error(err)
     return NextResponse.json({ error: 'เกิดข้อผิดพลาดในการลบ' }, { status: 500 })
   }
 }

@@ -18,7 +18,7 @@ export async function GET(request: NextRequest) {
     const projects = await getAllProjects()
     return NextResponse.json(projects)
   } catch (error) {
-    console.error('Error fetching projects:', error)
+    // console.error('Error fetching projects:', error)
     return NextResponse.json(
       { error: 'เกิดข้อผิดพลาดในการดึงข้อมูล' },
       { status: 500 }
@@ -30,7 +30,7 @@ export async function GET(request: NextRequest) {
 export async function POST(request: NextRequest) {
   try {
     const body = await request.json()
-    const { projectNumber, projectName, date, pileSize, scaleRatio, dataPoints } = body
+    const { projectNumber, projectName, date, pileSize, scaleRatio, dataPoints, username } = body
     
     // ตรวจสอบข้อมูล
     if (!projectNumber || !date || !pileSize || !scaleRatio || !dataPoints || dataPoints.length === 0) {
@@ -46,6 +46,7 @@ export async function POST(request: NextRequest) {
       date,
       pileSize,
       scaleRatio,
+      username || '',
       dataPoints
     )
     
@@ -55,7 +56,7 @@ export async function POST(request: NextRequest) {
       projectId
     })
   } catch (error) {
-    console.error('Error saving project:', error)
+    // console.error('Error saving project:', error)
     return NextResponse.json(
       { error: 'เกิดข้อผิดพลาดในการบันทึกข้อมูล' },
       { status: 500 }
@@ -80,7 +81,7 @@ export async function DELETE(request: NextRequest) {
       message: 'ลบโปรเจคเรียบร้อยแล้ว'
     })
   } catch (error) {
-    console.error('Error deleting project:', error)
+    // console.error('Error deleting project:', error)
     return NextResponse.json(
       { error: 'เกิดข้อผิดพลาดในการลบข้อมูล' },
       { status: 500 }

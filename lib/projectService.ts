@@ -1,4 +1,4 @@
-import pool from '@/lib/db'
+import projectPool from '@/lib/db'
 import type { DataPoint } from '@/app/page'
 
 export interface Project {
@@ -8,6 +8,7 @@ export interface Project {
   date: string
   pile_size: string
   scale_ratio: string
+  username?: string
   created_at: Date
   updated_at: Date
   data_points?: DataPoint[]
@@ -20,19 +21,20 @@ export async function saveProject(
   date: string,
   pileSize: string,
   scaleRatio: string,
+  username: string,
   dataPoints: DataPoint[]
 ): Promise<number> {
-  const client = await pool.connect()
+  const client = await projectPool.connect()
   
   try {
     await client.query('BEGIN')
     
     // บันทึกโครงการ
     const projectResult = await client.query(
-      `INSERT INTO projects (project_number, projects_name, date, pile_size, scale_ratio) 
-       VALUES ($1, $2, $3, $4, $5) 
+      `INSERT INTO projects (project_number, projects_name, date, pile_size, scale_ratio, username) 
+       VALUES ($1, $2, $3, $4, $5, $6) 
        RETURNING id`,
-      [projectNumber, projectName, date, pileSize, scaleRatio]
+      [projectNumber, projectName, date, pileSize, scaleRatio, username]
     )
     
     const projectId = projectResult.rows[0].id
@@ -59,7 +61,7 @@ export async function saveProject(
 
 // ดึงรายการโครงการทั้งหมด
 export async function getAllProjects(): Promise<Project[]> {
-  const result = await pool.query(
+  const result = await projectPool.query(
     `SELECT p.*, 
             json_agg(
               json_build_object(
@@ -79,7 +81,7 @@ export async function getAllProjects(): Promise<Project[]> {
 
 // ดึงข้อมูลโครงการเฉพาะ ID
 export async function getProjectById(id: number): Promise<Project | null> {
-  const result = await pool.query(
+  const result = await projectPool.query(
     `SELECT p.*, 
             json_agg(
               json_build_object(
@@ -108,7 +110,7 @@ export async function updateProject(
   scaleRatio: string,
   dataPoints: DataPoint[]
 ): Promise<void> {
-  const client = await pool.connect()
+  const client = await projectPool.connect()
   
   try {
     await client.query('BEGIN')
@@ -145,5 +147,5 @@ export async function updateProject(
 
 // ลบโครงการ
 export async function deleteProject(id: number): Promise<void> {
-  await pool.query('DELETE FROM projects WHERE id = $1', [id])
+  await projectPool.query('DELETE FROM projects WHERE id = $1', [id])
 }

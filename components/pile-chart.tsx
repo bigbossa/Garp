@@ -28,30 +28,30 @@ export const PileChart = forwardRef<{ exportChart: () => void }, PileChartProps>
       const getImagePath = () => {
         if (pileSize === "0.3M") {
           const ratio = scaleRatio.replace(":", "_")
-          return `/images/03M/3M-${ratio}.jpg`
+          return `/graph/images/03M/3M-${ratio}.jpg`
         } else if (pileSize === "0.5M") {
           const ratio = scaleRatio.replace(":", "_")
-          return `/images/05M/5M-${ratio}.jpg`
+          return `/graph/images/05M/5M-${ratio}.jpg`
         } else {
-          return "/images/dc-20ratio-presress-20pile-20i-22-5m-1-0.jpg"
+          return "/graph/images/dc-20ratio-presress-20pile-20i-22-5m-1-0.jpg"
         }
       }
       
       img.src = getImagePath()
       img.onload = () => {
         graphImageRef.current = img
-        console.log(`Image dimensions: ${img.naturalWidth} x ${img.naturalHeight}`)
+        // console.log(`Image dimensions: ${img.naturalWidth} x ${img.naturalHeight}`)
         drawPreview()
       }
 
       // Load footer image
       const footerImg = new Image()
       footerImg.crossOrigin = "anonymous"
-      const footerPath = pileSize === "0.3M" ? "/images/Footer/Latter3m.jpg" : "/images/Footer/Latter5m.jpg"
+      const footerPath = pileSize === "0.3M" ? "/graph/images/Footer/Latter3m.jpg" : "/graph/images/Footer/Latter5m.jpg"
       footerImg.src = footerPath
       footerImg.onload = () => {
         footerImageRef.current = footerImg
-        console.log(`Footer loaded: ${footerPath}`)
+        // console.log(`Footer loaded: ${footerPath}`)
       }
     }, [pileSize, scaleRatio])
 //PDFEditor

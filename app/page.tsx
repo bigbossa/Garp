@@ -45,9 +45,39 @@ export default function PilePlottingSystem() {
   const [currentPage, setCurrentPage] = useState(1)
   const [itemsPerPage, setItemsPerPage] = useState(10)
   const [searchQuery, setSearchQuery] = useState("")
+  const [username, setUsername] = useState("")
   const chartRef = useRef<{ exportChart: () => void }>(null)
   const { toast } = useToast()
   const router = useRouter()
+
+  // ตรวจสอบ authentication และโหลด username
+  useEffect(() => {
+    const isAuthenticated = localStorage.getItem('isAuthenticated')
+    if (!isAuthenticated) {
+      router.push('/login')
+    } else {
+      // ลองอ่านจาก user object ก่อน
+      const userStr = localStorage.getItem('user')
+      let displayName = localStorage.getItem('username')
+      
+      if (userStr) {
+        try {
+          const user = JSON.parse(userStr)
+          // ใช้ username จาก user object (ซึ่งเป็นชื่อจริง)
+          displayName = user.username || user.usersname || displayName
+        } catch (e) {
+          console.error('Failed to parse user:', e)
+        }
+      }
+      
+      console.log('Display name:', displayName)
+      if (displayName) {
+        setUsername(displayName)
+        // อัพเดท localStorage ให้ตรงกัน
+        localStorage.setItem('username', displayName)
+      }
+    }
+  }, [])
   const [showHeaderMenu, setShowHeaderMenu] = useState(false)
   const headerMenuRef = useRef<HTMLDivElement | null>(null)
 
@@ -61,6 +91,24 @@ export default function PilePlottingSystem() {
     return () => window.removeEventListener('click', handler)
   }, [showHeaderMenu])
 
+  // ฟังก์ชัน Logout
+  const handleLogout = async () => {
+    try {
+      await fetch('/graph/api/auth/logout', { method: 'POST' })
+      localStorage.removeItem('isAuthenticated')
+      localStorage.removeItem('username')
+      toast({
+        title: "ออกจากระบบสำเร็จ",
+        description: "กำลังกลับไปหน้า Login..."
+      })
+      setTimeout(() => {
+        router.push('/login')
+      }, 500)
+    } catch (error) {
+      // console.error('Logout error:', error)
+    }
+  }
+
   // Update scale ratio options when pile size changes
   const handlePileSizeChange = (value: string) => {
     setPileSize(value)
@@ -71,13 +119,13 @@ export default function PilePlottingSystem() {
   const fetchProjectNames = async () => {
     try {
       setSuggestionsLoading(true)
-      const res = await fetch('/api/project-namelist')
+      const res = await fetch('/graph/api/project-namelist')
       if (res.ok) {
         const rows = await res.json()
         setProjectNameList(rows || [])
       }
     } catch (err) {
-      console.warn('Failed to load project names', err)
+      // console.warn('Failed to load project names', err)
     } finally {
       setSuggestionsLoading(false)
     }
@@ -109,7 +157,7 @@ export default function PilePlottingSystem() {
         return
       }
 
-      const res = await fetch('/api/project-namelist', {
+      const res = await fetch('/graph/api/project-namelist', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ pj_name: n })
@@ -129,7 +177,7 @@ export default function PilePlottingSystem() {
       fetchProjectNames()
       setShowNameSuggestions(false)
     } catch (err) {
-      console.warn('Failed to add project name', err)
+      // console.warn('Failed to add project name', err)
     }
   }
 
@@ -229,7 +277,7 @@ export default function PilePlottingSystem() {
   // โหลดรายการโครงการที่บันทึกไว้
   const loadProjects = async (openList = true) => {
     try {
-      const response = await fetch('/api/projects')
+      const response = await fetch('/graph/api/projects')
       if (response.ok) {
         const projects = await response.json()
         setSavedProjects(projects)
@@ -239,7 +287,7 @@ export default function PilePlottingSystem() {
         setCurrentPage(1) // Reset to first page
       }
     } catch (error) {
-      console.error('Error loading projects:', error)
+      // console.error('Error loading projects:', error)
       toast({
         title: "เกิดข้อผิดพลาด",
         description: "ไม่สามารถโหลดรายการโปรเจคได้",
@@ -267,7 +315,17 @@ export default function PilePlottingSystem() {
 
     setIsSaving(true)
     try {
-      const response = await fetch('/api/projects', {
+      // Determine display name to save (prefer usersname)
+      let usernameToSave = username
+      try {
+        const userStr = localStorage.getItem('user')
+        if (userStr) {
+          const u = JSON.parse(userStr)
+          usernameToSave = u?.usersname || u?.username || usernameToSave
+        }
+      } catch {}
+
+      const response = await fetch('/graph/api/projects', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
@@ -276,6 +334,7 @@ export default function PilePlottingSystem() {
           date,
           pileSize,
           scaleRatio,
+          username: usernameToSave || '',
           dataPoints
         })
       })
@@ -291,7 +350,7 @@ export default function PilePlottingSystem() {
         throw new Error(result.error)
       }
     } catch (error) {
-      console.error('Error saving project:', error)
+      // console.error('Error saving project:', error)
       toast({
         title: "เกิดข้อผิดพลาด",
         description: error instanceof Error ? error.message : "ไม่สามารถบันทึกโปรเจคได้",
@@ -340,7 +399,7 @@ export default function PilePlottingSystem() {
     if (!confirm(`ต้องการลบโปรเจค ${projectNumber} หรือไม่?`)) return
 
     try {
-      const response = await fetch(`/api/projects?id=${id}`, {
+      const response = await fetch(`/graph/api/projects?id=${id}`, {
         method: 'DELETE'
       })
 
@@ -352,7 +411,7 @@ export default function PilePlottingSystem() {
         loadProjects() // โหลดรายการใหม่
       }
     } catch (error) {
-      console.error('Error deleting project:', error)
+      // console.error('Error deleting project:', error)
       toast({
         title: "เกิดข้อผิดพลาด",
         description: "ไม่สามารถลบโปรเจคได้",
@@ -371,6 +430,33 @@ export default function PilePlottingSystem() {
   })
   const totalPages = Math.max(1, Math.ceil(filteredProjects.length / itemsPerPage))
 
+  // Resolve username from state or localStorage (fallback)
+  const resolveMenuUsername = () => {
+    try {
+      if (username) return username
+      if (typeof window !== 'undefined') {
+        const userStr = localStorage.getItem('user') || ''
+        if (userStr) {
+          const u = JSON.parse(userStr)
+          // Prefer usersname first, then username
+          const name = u?.usersname || u?.username || localStorage.getItem('username') || ''
+          // debug log to verify
+          console.log('Resolved menu username:', name)
+          return name || ''
+        }
+        // Fallback to simple stored display name
+        const name = localStorage.getItem('username') || ''
+        console.log('Resolved menu username (no user obj):', name)
+        return name
+      }
+      return ''
+    } catch (e) {
+      console.log('Resolve username error:', e)
+      return localStorage.getItem('username') || ''
+    }
+  }
+  const menuUsername = resolveMenuUsername()
+
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-50 to-slate-100 flex flex-col">
       {/* Header */}
@@ -382,12 +468,20 @@ export default function PilePlottingSystem() {
           </div>
 
           <div className="flex items-center gap-4 relative" ref={headerMenuRef as any}>
-
-
             <Button
               variant="ghost"
               size="sm"
               onClick={async () => {
+                // โหลด username ทุกครั้งที่เปิดเมนู
+                const userStr = localStorage.getItem('user')
+                if (userStr) {
+                  try {
+                    const user = JSON.parse(userStr)
+                    // Prefer usersname first
+                    const displayName = user.usersname || user.username || localStorage.getItem('username')
+                    if (displayName) setUsername(displayName)
+                  } catch (e) {}
+                }
                 if (!showHeaderMenu) await loadProjects(false)
                 setShowHeaderMenu(prev => !prev)
               }}
@@ -397,12 +491,20 @@ export default function PilePlottingSystem() {
             </Button>
 
             {showHeaderMenu && (
-              <div className="absolute right-0 mt-2 w-44 bg-white rounded-md shadow-lg z-50 overflow-hidden">
+              <div className="absolute right-0 top-full mt-2 w-52 bg-white rounded-md shadow-lg z-50 overflow-hidden border">
+                <div className="px-3 py-2 bg-green-50 border-b border-green-200">
+                  <div className="text-xs text-green-600 font-medium">ผู้ใช้งาน</div>
+                  <div className="text-sm font-semibold text-green-900 truncate">{menuUsername || 'ไม่พบชื่อผู้ใช้'}</div>
+                </div>
                 <button className="w-full text-left px-3 py-2 hover:bg-slate-50" onClick={() => { setShowHeaderMenu(false); router.push('/') }}>
                   หน้าแรก
                 </button>
-                <button className="w-full text-left px-3 py-2 hover:bg-slate-100" onClick={() => { setShowHeaderMenu(false); router.push('/project-namelist') }}>
+                <button className="w-full text-left px-3 py-2 hover:bg-slate-50" onClick={() => { setShowHeaderMenu(false); router.push('/project-namelist') }}>
                   จัดการรายชื่อโครงการ
+                </button>
+                <div className="border-t"></div>
+                <button className="w-full text-left px-3 py-2 hover:bg-red-50 text-red-600" onClick={() => { setShowHeaderMenu(false); handleLogout() }}>
+                  ออกจากระบบ
                 </button>
               </div>
             )}
@@ -700,7 +802,7 @@ export default function PilePlottingSystem() {
                                 จุดข้อมูล: {project.data_points?.length || 0} จุด
                               </div>
                               <div className="text-xs text-slate-400 mt-1">
-                                บันทึกเมื่อ: {new Date(project.created_at).toLocaleDateString('th-TH')}
+                                บันทึกเมื่อ: {new Date(project.created_at).toLocaleDateString('th-TH')} | ผู้บันทึก: {(project as any).username || 'ไม่ระบุ'}
                               </div>
                             </div>
                             <div className="flex gap-2">

@@ -9,7 +9,7 @@ export async function GET() {
       message: 'สร้างตารางฐานข้อมูลเรียบร้อยแล้ว' 
     })
   } catch (error) {
-    console.error('Database initialization error:', error)
+    // console.error('Database initialization error:', error)
     return NextResponse.json({ 
       success: false, 
       message: 'เกิดข้อผิดพลาดในการสร้างตาราง',

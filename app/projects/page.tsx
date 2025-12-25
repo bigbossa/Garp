@@ -25,10 +25,10 @@ export default function ProjectsPage() {
   const fetchList = async () => {
     setLoading(true)
     try {
-      const res = await fetch('/api/projects')
+      const res = await fetch('/graph/api/projects')
       if (res.ok) setList(await res.json())
     } catch (err) {
-      console.error(err)
+      // console.error(err)
     } finally {
       setLoading(false)
     }
@@ -38,24 +38,24 @@ export default function ProjectsPage() {
 
   const handleOpen = async (id: number) => {
     try {
-      const res = await fetch(`/api/projects?id=${id}`)
+      const res = await fetch(`/graph/api/projects?id=${id}`)
       if (!res.ok) return
       const project = await res.json()
       // Save project data to sessionStorage and navigate to home where it will be loaded
       sessionStorage.setItem('openProjectData', JSON.stringify(project))
       router.push('/')
     } catch (err) {
-      console.error(err)
+      // console.error(err)
     }
   }
 
   const handleDelete = async (id: number) => {
     if (!confirm('ต้องการลบโปรเจคหรือไม่?')) return
     try {
-      const res = await fetch(`/api/projects?id=${id}`, { method: 'DELETE' })
+      const res = await fetch(`/graph/api/projects?id=${id}`, { method: 'DELETE' })
       if (res.ok) fetchList()
     } catch (err) {
-      console.error(err)
+      // console.error(err)
     }
   }
 

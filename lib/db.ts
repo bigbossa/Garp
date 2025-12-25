@@ -1,7 +1,7 @@
 import { Pool } from 'pg'
 
-// สร้าง connection pool สำหรับเชื่อมต่อ PostgreSQL
-const pool = new Pool({
+// Connection pool สำหรับ Garp_RatioPresress database (สำหรับเก็บข้อมูลโปรเจค)
+const projectPool = new Pool({
   host: process.env.DB_HOST || '127.0.0.1',
   port: parseInt(process.env.DB_PORT || '5432'),
   database: process.env.DB_NAME || 'Garp_RatioPresress',
@@ -13,13 +13,13 @@ const pool = new Pool({
 })
 
 // ทดสอบการเชื่อมต่อ
-pool.on('connect', () => {
-  console.log('✅ Connected to PostgreSQL database')
+projectPool.on('connect', () => {
+  // console.log('✅ Connected to Garp_RatioPresress database (Project Data)')
 })
 
-pool.on('error', (err) => {
-  console.error('❌ Unexpected error on PostgreSQL client', err)
+projectPool.on('error', (err) => {
+  // console.error('❌ Unexpected error on Garp_RatioPresress database client', err)
   process.exit(-1)
 })
 
-export default pool
+export default projectPool

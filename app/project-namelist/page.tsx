@@ -36,7 +36,7 @@ export default function ProjectNameListPage() {
   }, [showHeaderMenu])
 
   const fetchList = async () => {
-    const res = await fetch('/api/project-namelist')
+    const res = await fetch('/graph/api/project-namelist')
     if (res.ok) setList(await res.json())
   }
 
@@ -52,7 +52,7 @@ export default function ProjectNameListPage() {
       return
     }
 
-    const res = await fetch('/api/project-namelist', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ pj_name: pjName }) })
+    const res = await fetch('/graph/api/project-namelist', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ pj_name: pjName }) })
     if (res.status === 409) {
       toast({ title: 'ข้อมูลซ้ำ', description: 'มีชื่อโครงการนี้อยู่แล้ว', variant: 'default' })
       setPjName('')
@@ -71,7 +71,7 @@ export default function ProjectNameListPage() {
 
   const handleUpdate = async () => {
     if (!editingId) return
-    await fetch('/api/project-namelist', { method: 'PUT', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ pj_id: editingId, pj_name: pjName }) })
+    await fetch('/graph/api/project-namelist', { method: 'PUT', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ pj_id: editingId, pj_name: pjName }) })
     setEditingId(null)
     setPjName('')
     fetchList()
@@ -79,7 +79,7 @@ export default function ProjectNameListPage() {
 
   const handleDelete = async (id: number) => {
     if (!confirm('ต้องการลบรายการนี้หรือไม่?')) return
-    await fetch(`/api/project-namelist?id=${id}`, { method: 'DELETE' })
+    await fetch(`/graph/api/project-namelist?id=${id}`, { method: 'DELETE' })
     fetchList()
   }
 
